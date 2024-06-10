@@ -33,7 +33,7 @@ const getUserWithEmail = function (email) {
     })
     .catch((err) => {
       console.log(err.message);
-      return null;
+      throw err;
     });
 };
 
@@ -57,7 +57,7 @@ const getUserWithId = function (id) {
     })
     .catch((err) => {
       console.log(err.message);
-      return null;
+      throw err;
     });
 };
 
@@ -82,7 +82,7 @@ const addUser = function (user) {
     })
     .catch((err) => {
       console.log(err.message);
-      return null;
+      throw err;
     });
 };
 
@@ -114,6 +114,7 @@ const getAllProperties = function (options, limit = 10) {
     })
     .catch((err) => {
       console.log(err.message);
+      throw err;
     });
 };
 

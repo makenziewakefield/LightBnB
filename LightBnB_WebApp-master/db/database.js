@@ -20,15 +20,23 @@ const users = require("./json/users.json");
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = function (email) {
-  let resolvedUser = null;
-  for (const userId in users) {
-    const user = users[userId];
-    if (user && user.email.toLowerCase() === email.toLowerCase()) {
-      resolvedUser = user;
-    }
-  }
-  return Promise.resolve(resolvedUser);
+  const queryString = `SELECT * FROM users WHERE email = $1 LIMIT 1;`;
+  const values = [email.toLowerCase()];
+
+  return pool
+    .query(queryString, values)
+    .then((result) => {
+      if (result.rows.length === 0) {
+        return null;
+      }
+      return result.rows[0];
+    })
+    .catch((err) => {
+      console.log(err.message);
+      return null;
+    });
 };
+
 
 /**
  * Get a single user from the database given their id.
@@ -36,8 +44,23 @@ const getUserWithEmail = function (email) {
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = function (id) {
-  return Promise.resolve(users[id]);
+  const queryString = `SELECT * FROM users WHERE id = $1 LIMIT 1;`;
+  const values = [id];
+
+  return pool
+    .query(queryString, values)
+    .then((result) => {
+      if (result.rows.length === 0) {
+        return null;
+      }
+      return result.rows[0];
+    })
+    .catch((err) => {
+      console.log(err.message);
+      return null;
+    });
 };
+
 
 /**
  * Add a new user to the database.
@@ -45,10 +68,22 @@ const getUserWithId = function (id) {
  * @return {Promise<{}>} A promise to the user.
  */
 const addUser = function (user) {
-  const userId = Object.keys(users).length + 1;
-  user.id = userId;
-  users[userId] = user;
-  return Promise.resolve(user);
+  const queryString = `
+  INSERT INTO users (name, email, password)
+  VALUES ($1, $2, $3)
+  RETURNING *;
+  `;
+  const values = [user.name, user.email, user.password];
+
+  return pool
+    .query(queryString, values)
+    .then((result) => {
+      return result.rows[0];
+    })
+    .catch((err) => {
+      console.log(err.message);
+      return null;
+    });
 };
 
 /// Reservations

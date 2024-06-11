@@ -2,8 +2,8 @@ const { Pool } = require('pg');
 
 // Configure the database connection
 const pool = new Pool({
-  user: 'makenziewakefield',
-  password: 'development',
+  user: 'your_database_user',
+  password: 'your_database_password',
   host: 'localhost',
   database: 'lightbnb',
   port: 5432,
@@ -19,7 +19,7 @@ const users = require("./json/users.json");
  * @param {String} email The email of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithEmail = function (email) {
+const getUserWithEmail = function(email) {
   const queryString = `SELECT * FROM users WHERE email = $1 LIMIT 1;`;
   const values = [email.toLowerCase()];
 
@@ -32,7 +32,7 @@ const getUserWithEmail = function (email) {
       return result.rows[0];
     })
     .catch((err) => {
-      console.log(err.message);
+      console.error(err.message);
       throw err;
     });
 };
@@ -56,7 +56,7 @@ const getUserWithId = function (id) {
       return result.rows[0];
     })
     .catch((err) => {
-      console.log(err.message);
+      console.error(err.message);
       throw err;
     });
 };
@@ -67,11 +67,11 @@ const getUserWithId = function (id) {
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-const addUser = function (user) {
+const addUser = function(user) {
   const queryString = `
-  INSERT INTO users (name, email, password)
-  VALUES ($1, $2, $3)
-  RETURNING *;
+    INSERT INTO users (name, email, password)
+    VALUES ($1, $2, $3)
+    RETURNING *;
   `;
   const values = [user.name, user.email, user.password];
 
@@ -81,7 +81,7 @@ const addUser = function (user) {
       return result.rows[0];
     })
     .catch((err) => {
-      console.log(err.message);
+      console.error(err.message);
       throw err;
     });
 };
@@ -93,7 +93,7 @@ const addUser = function (user) {
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
-const getAllReservations = function (guest_id, limit = 10) {
+const getAllReservations = function(guest_id, limit = 10) {
   const queryString = `
     SELECT reservations.*, properties.*, avg(property_reviews.rating) as average_rating
     FROM reservations
@@ -107,7 +107,10 @@ const getAllReservations = function (guest_id, limit = 10) {
     return pool
       .query(queryString, [guest_id, limit])
       .then(result => result.rows)
-      .catch(err => console.log(err.message));
+      .catch((err) => {
+        console.error(err.message);
+        throw err;
+      });
 };
 
 /// Properties
@@ -118,13 +121,13 @@ const getAllReservations = function (guest_id, limit = 10) {
  * @param {*} limit The number of results to return.
  * @return {Promise<[{}]>}  A promise to the properties.
  */
-const getAllProperties = function (options, limit = 10) {
+const getAllProperties = function(options, limit = 10) {
   const queryParams = [];
   let queryString = `
-  SELECT properties.*, avg(property_reviews.rating) as average_rating
-  FROM properties
-  LEFT JOIN property_reviews ON properties.id = property_reviews.property_id
-  WHERE 1=1
+    SELECT properties.*, avg(property_reviews.rating) as average_rating
+    FROM properties
+    LEFT JOIN property_reviews ON properties.id = property_reviews.property_id
+    WHERE 1=1
   `;
 
   if (options.city) {
@@ -146,7 +149,7 @@ const getAllProperties = function (options, limit = 10) {
   }
 
   queryString += `
-  GROUP BY properties.id
+    GROUP BY properties.id
   `;
 
   if (options.minimum_rating) {
@@ -156,13 +159,16 @@ const getAllProperties = function (options, limit = 10) {
 
   queryParams.push(limit);
   queryString += `
-  ORDER BY cost_per_night
-  LIMIT $${queryParams.length};
+    ORDER BY cost_per_night
+    LIMIT $${queryParams.length};
   `;
 
-  console.log(queryString, queryParams);
-
-  return pool.query(queryString, queryParams).then((res) => res.rows);
+  return pool.query(queryString, queryParams)
+    .then((res) => res.rows)
+    .catch((err) => {
+      console.error(err.message);
+      throw err;
+    });
 };
 
 
@@ -171,7 +177,7 @@ const getAllProperties = function (options, limit = 10) {
  * @param {{}} property An object containing all of the property details.
  * @return {Promise<{}>} A promise to the property.
  */
-const addProperty = function (property) {
+const addProperty = function(property) {
   const queryParams = [
     property.owner_id,
     property.title,
@@ -212,7 +218,10 @@ const addProperty = function (property) {
 
   return pool.query(queryString, queryParams)
     .then(res => res.rows[0])
-    .catch(err => console.error('Error executing query', err));
+    .catch((err) => {
+      console.error(err.message);
+      throw err;
+    });
 };
 
 module.exports = {

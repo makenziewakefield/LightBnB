@@ -35,8 +35,3 @@ A simple AirBnb clone that uses a server-side Javascript to display the informat
 - Express
 - Node.js
 - pg
-
-## Screenshots
-
-!["screenshot of main listings page"](docs/listings_page.png)
-!["screenshot of new listing form"](docs/new_listing_page.png)
